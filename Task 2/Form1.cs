@@ -33,6 +33,7 @@ namespace Task_2
             protected int y;
             enum TileType { Hero, Enemy, Gold, Weapon };
 
+
             //Constructor//
             public Tile()
             {
@@ -55,24 +56,85 @@ namespace Task_2
 
         class Obstacle : Tile
         {
-            protected int x;
-            protected int y;
+            public Obstacle(int x, int y) : base()
+            {
+
+            }
         }
 
         class EmptyTile : Tile
         {
+            public EmptyTile(int x, int y) : base ()
+            {
 
+            }
         }
 
         //Question 2.2//
         public abstract class Character : Tile
         {
-            protected int HP;
-            protected int MaxHP;
-            protected int Damage;
+            protected int hp;
+
+            public int HP
+            {
+                get { return hp; }
+                set { hp = value; }
+            }
+            protected int maxhp;
+
+            public int MAXHP
+            {
+                get { return maxhp; }
+                set { maxhp = value; }
+            }
+            protected int damage;
+
+            public int DAMAGE
+            {
+                get { return damage; }
+                set { damage = value; }
+            }
+
+            private List<Tile> Vision
+            {
+                get { return Vision; }
+                set { Vision = value; }
+            }
+
+            private Movement movement;
+
+            public Movement MOVEMENT
+            {
+                get { return movement; }
+                set { movement = value;}
+            }
+
+            protected Character(int x, int y, int HP, int MAXHP, int DAMAGE)
+            {
+                HP = HP;
+                MAXHP = MAXHP;
+                DAMAGE = DAMAGE;
+            }
             string[] Tilearray = { "North", "South", "East", "West" };
 
-            enum Movement { NoMovemnt, Up, Down, Left, Right };
+            public enum TileType
+            {
+                Hero,
+                Enemy,
+                Gold,
+                Weapon,
+                Barrier,
+                Empty,
+            }
+
+            public enum Movement
+            {
+                NoMovement,
+                Up,
+                Down,
+                Left,
+                Right,
+            }
 
             //Question 2.3//
             public Character()
@@ -82,12 +144,18 @@ namespace Task_2
 
             }
 
-            public virtual void Attack()
+            public virtual void Attack(Character Target)
             {
-
+                Target.HP -= DAMAGE;
             }
 
-            public bool IsDead = true;
+            public bool IsDead()
+            {
+                if(HP <= 0)
+                {
+                    return true;
+                }
+            }
 
             public virtual bool CheckRange { get; set; }
 
@@ -117,29 +185,28 @@ namespace Task_2
         //Question 2.4//
         public abstract class Enemy : Character
         {
-            public Enemy()
+            protected Random random = new Random();
+
+           protected Enemy(int X, int Y, int DAMAGE, int HP, int MAXHP)
             {
-                X = 0;
-                Y = 0;
+                DAMAGE = DAMAGE;
+                HP = HP;
+                MAXHP = MAXHP;
 
             }
-
-            public virtual void ToString()
+            public override string ToString()
             {
-
+                return base.ToString();
             }
+
         }
 
         //Question 2.5//
         public class Goblin : Enemy
         {
-            public Goblin()
+            public Goblin(int X, int Y, string SYMBOL,int DAMAGE=1, int MAXHP=10, int STARTINGHP=10) : base (X, Y, DAMAGE, STARTINGHP, MAXHP)
             {
-                X = 0;
-                Y = 0;
-
-                int HP = 10;
-                int Damage = 1;
+              
             }
 
             public virtual void ReturnMove()
@@ -150,16 +217,30 @@ namespace Task_2
             //Question 2.6//
             class Hero : Character
             {
-                public Hero()
+                public Hero(int X, int Y, string SYMOBOL, int HP, int MAXHP, int DAMAGE) : base (X, Y, HP, MAXHP, DAMAGE)
                 {
-                    X = 0;
-                    Y = 0;
+                   
                 }
-                public virtual void ReturnMove()
+                public virtual void ReturnMove(Movement CharcaterMove = Movement.NoMovement)
                 {
+                  
+                }
 
+                public override string ToString()
+                {
+                    string info = "Player Stats : \n";
+                    info += "HP: " + HP.ToString() + "/" + MAXHP.ToString() + "\n";
+                    info += "Damage: " + DAMAGE.ToString() + "\n";
+                    info += "[" + X.ToString() + "," + Y.ToString() + "]";
+                    return info;
                 }
+                //bool CheckForValidMove(Movement CharacterMove)
+                //{
+
+               // }
             }
+
+
 
 
 
@@ -168,6 +249,71 @@ namespace Task_2
         //Question 3.1//
         public class Map
         {
+            private Tile[,] mapcontainer;
+            public Tile[,] MAPCONTAINER
+            {
+                get { return mapcontainer; }
+                set { mapcontainer = value; }
+            }
+            //private Hero playercharacter;
+            //public Hero PLAYERCHARCTER
+            // {
+            //   get { return playercharacter; }
+            //    set { playercharacter = value; }
+            //}
+
+            private List<Enemy> enemies;
+
+            public List<Enemy> ENEMIES
+            {
+                get { return enemies; }
+                set { enemies = value; }
+            }
+
+            private int mapwidth;
+            public int MAPWIDTH
+            {
+                get { return mapwidth; }
+                set { mapwidth = value; }
+            }
+
+            private int mapheight;
+            public int MAPHEIGHT
+            {
+                get { return mapheight; }
+                set { mapheight = value; }
+            }
+
+            protected Random random = new Random();
+
+            public Map(int MINWIDTH, int MAXWIDTH, int MINHEIGHT, int MAXHEIGHT, int NUMBEROFENEMIES)
+            {
+                MAPWIDTH = random.Next(MINWIDTH, MAXHEIGHT);
+                MAPHEIGHT = random.Next(MINHEIGHT, MAXHEIGHT);
+
+                MAPCONTAINER = new Tile[MAPWIDTH, MAPHEIGHT];
+
+                ENEMIES = new List<Enemy>();
+
+                GenerateInitialMap();
+
+                UpdateVision();
+            }
+
+            public void UpdateVision()
+            {
+                foreach (Enemy E in ENEMIES)
+                {
+                    E.VISION.CLEAR();
+                    if(E.X> 0)
+                    {
+                        E.VISION.Add(MAPCONTAINER[E.X - 1, E.Y]);
+                    }
+                }
+            }
+
+
+
             int[,] TileArray;
             int[] Enemy;
             int minheight { get; set; }
@@ -184,12 +330,22 @@ namespace Task_2
                 maxwidth = 200;
             }
 
-            public void UpdateVision()
+           void GenerateInitialMap()
             {
-
+                for (int y = 0; y < MAPWIDTH; y++)
+                {
+                    for (int x = 0; x < MAPHEIGHT; x++)
+                    {
+                        Create(TileType.Barrier, x, y);
+                    }
+                    else
+                    {
+                        Create(TileType.Empty, x, y);
+                    }
+                }
             }
 
-
+            Create(TileType.Hero);
         }
 
         //Question 3.3//
