@@ -345,7 +345,14 @@ namespace Task_2
                 }
             }
 
-            Create(TileType.Hero);
+            public void Create(TileType TypeOfTyle, int X = 0, int Y = 0)
+            {
+                switch (TypeOfTyle)
+                {
+                    Obstacle NewBarrier = new Obstacle(X, Y, "X", TypeOfTyle);
+                MAPCONTAINER[X,Y]= NewBarrier
+                }
+            }
         }
 
         //Question 3.3//
@@ -367,16 +374,10 @@ namespace Task_2
         // Question 2.1//
         class Item: Tile
         {
-            public Item()
-            {
-                X = x;
-                Y = y;
-            }
+        public Item(int X, int Y)
+        {
 
-            public override string ToString()
-            {
-                return base.ToString();
-            }
+        }
 
         }
 
