@@ -14,12 +14,13 @@ namespace Task_2
     {
         public Form1()
         {
-
+            InitializeComponent();
             GameEngine GameEngine = new GameEngine();
+            label1.Text = GameEngine.MAP.ToString();
 
 
             Console.ReadLine();
-            InitializeComponent();
+            
         }
 
         private void Form1_Load(object sender, EventArgs e)
@@ -29,34 +30,41 @@ namespace Task_2
         //Question 2.1//
         public abstract class Tile
         {
+            protected string symbol;
+            public string SYMBOL
+            {
+                get { return symbol; }
+                set { symbol = value; }
+            }
             protected int x;
             protected int y;
             enum TileType { Hero, Enemy, Gold, Weapon };
 
 
             //Constructor//
-            public Tile(int x,int y)
+            public Tile(int x,int y, string symbol)
             {
                 this.x = x;
                 this.y = y;
+                this.symbol = symbol;
             }
 
             public int X
             {
-                get { return X; }
+                get { return x; }
                 set { }
             }
 
             public int Y
             {
-                get { return Y; }
+                get { return y; }
                 set { }
             }
         }
 
         class Obstacle : Tile
         {
-            public Obstacle(int x, int y) : base(x,y)
+            public Obstacle(int x, int y) : base(x,y, "X")
             {
 
             }
@@ -64,7 +72,7 @@ namespace Task_2
 
         class EmptyTile : Tile
         {
-            public EmptyTile(int x, int y) : base(x,y)
+            public EmptyTile(int x, int y) : base(x,y,"=")
             {
 
             }
@@ -72,7 +80,7 @@ namespace Task_2
         // Task 2//
         public abstract class Item : Tile
         {
-            public Item(int X, int Y) : base (X,Y)// delegtes//
+            public Item(int X, int Y, string symbol) : base (X,Y, symbol)// delegtes//
             {
 
             }
@@ -83,9 +91,9 @@ namespace Task_2
         // Question 2.2//
         public class Gold : Item 
         {
-            public Gold(int X, int Y): base (X, Y)
+            public Gold(int X, int Y): base (X, Y, "D")
             {
-
+                gold = random.Next(1, 6);
             }
             private int gold;
             public int GOLD
@@ -93,6 +101,7 @@ namespace Task_2
                 get { return gold; }
                 set { gold = value; }
             }
+            private Random random = new Random();
 
             public override string ToString()
             {
@@ -156,7 +165,7 @@ namespace Task_2
                 set { movement = value; }
             }
 
-            protected Character(int x, int y, int HP, int MAXHP, int DAMAGE) : base(x,y)
+            protected Character(int x, int y, int HP, int MAXHP, int DAMAGE, string symbol) : base(x,y, symbol)
             {
                 HP = HP;
                 MAXHP = MAXHP;
@@ -234,7 +243,7 @@ namespace Task_2
 
             protected Random random = new Random();
 
-            protected Enemy(int X, int Y, int DAMAGE, int HP, int MAXHP) : base (X,Y,HP,MAXHP,DAMAGE)
+            protected Enemy(int X, int Y, int DAMAGE, int HP, int MAXHP, string symbol) : base (X,Y,HP,MAXHP,DAMAGE, symbol)
             {
                 
 
@@ -249,7 +258,7 @@ namespace Task_2
         //Question 2.5//
         public class Goblin : Enemy
         {
-            public Goblin(int X, int Y, string SYMBOL, int DAMAGE = 1, int MAXHP = 10, int STARTINGHP = 10) : base(X, Y, DAMAGE, STARTINGHP, MAXHP)
+            public Goblin(int X, int Y) : base(X, Y,1,10, 10, "G")
             {
 
             }
@@ -262,7 +271,7 @@ namespace Task_2
 
         class Mage : Enemy
         {
-            public Mage (int X, int Y) : base(X, Y, 5, 10, 10)
+            public Mage (int X, int Y) : base(X, Y, 5, 10, 10, "M")
             {
 
             }
@@ -271,7 +280,7 @@ namespace Task_2
         //Question 2.6//
         class Hero : Character
             {
-                public Hero(int X, int Y, string SYMOBOL, int HP, int MAXHP, int DAMAGE) : base(X, Y, HP, MAXHP, DAMAGE)
+                public Hero(int X, int Y, string SYMOBOL, int HP, int MAXHP, int DAMAGE) : base(X, Y, HP, MAXHP, DAMAGE, "H")
                 {
 
                 }
@@ -303,6 +312,9 @@ namespace Task_2
         //Question 3.1//
         public class Map
         {
+            private int enemyNum;
+            private Hero PLAYER;
+            
             private Tile[,] mapcontainer;
             public Tile[,] MAPCONTAINER
             {
@@ -348,10 +360,24 @@ namespace Task_2
                 MAPCONTAINER = new Tile[MAPWIDTH, MAPHEIGHT];
 
                 ENEMIES = new List<Enemy>();
-
+                enemyNum = NUMBEROFENEMIES;
                 GenerateInitialMap();
-
+                
                 UpdateVision();
+            }
+
+            public override string ToString()
+            {
+                string mapp = "";
+                for (int y = 0; y < MAPWIDTH; y++)
+                {
+                    for (int x = 0; x < MAPHEIGHT; x++)
+                    {
+                        mapp += mapcontainer[y, x].SYMBOL;
+                    }
+                    mapp += "\n";
+                }
+                return mapp;
             }
 
             public void UpdateVision()
@@ -373,7 +399,7 @@ namespace Task_2
                 {
                     for (int x = 0; x < MAPHEIGHT; x++)
                     {
-                        if (y == 0 || y == mapwidth - 1 || x == 0 || x == mapheight)
+                        if (y == 0 || y == mapwidth - 1 || x == 0 || x == mapheight -1)
                         { Create(Character.TileType.Barrier, y, x); }
                         else
                         {
@@ -381,6 +407,18 @@ namespace Task_2
                         }
                     }
 
+                }
+                Create(Character.TileType.Hero, random.Next(mapwidth - 1), random.Next(mapheight - 1));
+                for(int e = 0; e < enemyNum; e++)
+                {
+                    int x = random.Next(mapwidth - 1);
+                    int y = random.Next(mapheight - 1);
+                    while(!(mapcontainer[x,y] is EmptyTile))
+                    {
+                        x = random.Next(mapwidth - 1);
+                        y = random.Next(mapheight - 1);
+                    }
+                    Create(Character.TileType.Enemy, x, y);
                 }
             }
 
@@ -392,6 +430,11 @@ namespace Task_2
                         MAPCONTAINER[X, Y] = new Obstacle(X, Y);
                         break;
                     case  Character.TileType.Empty: MAPCONTAINER[X, Y] = new EmptyTile(X, Y);
+                        break;
+                    case Character.TileType.Hero: MAPCONTAINER[X, Y] = new Hero(X, Y, "H", 10, 10, 5);
+                        break;
+                    case Character.TileType.Enemy: MAPCONTAINER[X, Y] = new Goblin(X, Y);
+                        enemies.Add((Enemy)mapcontainer[X, Y]);
                         break;
                 }
             }
