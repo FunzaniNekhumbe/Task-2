@@ -56,7 +56,7 @@ namespace Task_2
             this.upbtn.TabIndex = 1;
             this.upbtn.Text = "UP";
             this.upbtn.UseVisualStyleBackColor = true;
-            this.upbtn.Click += new System.EventHandler(this.button1_Click);
+            
             // 
             // downbtn
             // 
